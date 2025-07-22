@@ -4,47 +4,29 @@ const UserModel = require("../Models/User");
 
 
 const signup = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-
-    // 1. Check if user already exists
-    const existingUser = await UserModel.findOne({ email });
-    if (existingUser) {
-      return res.status(409).json({
-        message: 'User already exists. Please login.',
-        success: false
-      });
+    try {
+        const { name, email, password } = req.body;
+        const user = await UserModel.findOne({ email });
+        if (user) {
+            return res.status(409)
+                .json({ message: 'User is already exist, you can login', success: false });
+        }
+        const userModel = new UserModel({ name, email, password });
+        userModel.password = await bcrypt.hash(password, 10);
+        await userModel.save();
+        res.status(201)
+            .json({
+                message: "Signup successfully",
+                success: true
+            })
+    } catch (err) {
+        res.status(500)
+            .json({
+                message: "Internal server errror",
+                success: false
+            })
     }
-
-    // 2. Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // 3. Create a new user with the hashed password
-    const newUser = new UserModel({
-      name,
-      email,
-      password: hashedPassword
-    });
-
-    // 4. Save the user to the database
-    await newUser.save();
-
-    // 5. Send success response
-    res.status(201).json({
-      message: 'Signup successful',
-      success: true
-    });
-
-  } catch (err) {
-    // 6. Handle server errors
-    res.status(500).json({
-      message: 'Internal server error',
-      success: false,
-      error: err.message // optional: send actual error in dev
-    });
-  }
-};
-
+}
 
 const login = async (req, res) => {
     try {
