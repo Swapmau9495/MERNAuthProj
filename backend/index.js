@@ -13,7 +13,10 @@ app.get('/ping', (req, res) => {
 });
 
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({
+  origin: 'https://mern-auth-proj.vercel.app/',  
+  credentials: true
+}));
 app.use('/auth', AuthRouter);
 
 
